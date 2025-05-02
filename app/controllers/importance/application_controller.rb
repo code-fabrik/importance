@@ -1,4 +1,5 @@
 module Importance
-  class ApplicationController < ActionController::Base
+  class ApplicationController < ::ApplicationController
+    layout 'layouts/application'
   end
 end

@@ -1,6 +1,24 @@
 require "importance/version"
 require "importance/engine"
+require "importance/configuration"
 
 module Importance
-  # Your code goes here...
+  class << self
+    attr_writer :configuration
+
+    def configuration
+      @configuration ||= Configuration.new
+    end
+
+    # Alias for YourImporterGemName.configuration
+    def config
+      configuration
+    end
+
+    # Yields the singleton configuration object to a block.
+    # Used in the Rails initializer.
+    def configure
+      yield(configuration)
+    end
+  end
 end
