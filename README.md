@@ -52,7 +52,20 @@ as you wish. Make sure the path stays, and it is a multipart form.
 <% end %>
 ```
 
+## Customization
+
+The following translations can be overriden by the application
+
+```yml
+en:
+  importance:
+    use_column_as: Use column as
+    ignore: Ignore
+    save: Save
+```
+
 ## Installation
+
 Add this line to your application's Gemfile:
 
 ```ruby

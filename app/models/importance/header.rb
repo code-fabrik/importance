@@ -18,7 +18,7 @@ module Importance
         similarity = 1 - percentage
         [ attribute, similarity ]
       end
-      dummy_entry = [ OpenStruct.new(key: nil, labels: [ I18n.t("ignore") ]), 0.6 ]
+      dummy_entry = [ OpenStruct.new(key: nil, labels: [ I18n.t("importance.ignore") ]), 0.6 ]
       (attribute_with_similiarity + [ dummy_entry ]).sort_by { |_, similarity| similarity }.reverse.map { |attribute, _| attribute }
     end
   end

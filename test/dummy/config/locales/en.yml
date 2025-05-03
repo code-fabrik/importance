@@ -28,6 +28,7 @@
 #       enabled: "ON"
 
 en:
-  use_column_as: Use column as
-  ignore: Ignore
-  save: Save
+  importance:
+    use_column_as: Use column as
+    ignore: Ignore
+    save: Save
