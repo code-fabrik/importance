@@ -4,6 +4,7 @@ if Rails.env.development? && defined?(Zeitwerk::Loader.default_logger)
 end
 
 Importance.configure do |config|
+  config.set_layout :bootstrap
   config.register_importer :students do |importer|
     importer.attribute :first_name, [ "Vorname", "vorname", "vname", "fname", "l_vorname" ]
     importer.attribute :last_name, [ "Nachname", "nachname", "nname", "lname", "l_nachname" ]

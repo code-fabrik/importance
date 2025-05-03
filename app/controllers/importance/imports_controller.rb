@@ -37,6 +37,8 @@ module Importance
         Importance::Header.new(cell, importer.attributes)
       end
       @samples = worksheet.first(5)
+
+      @layout = "Importance::#{Importance.configuration.layout.to_s.camelize}Layout".constantize
     end
 
     # Import page. Load the file according to the mapping and import it.

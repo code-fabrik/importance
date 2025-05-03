@@ -1,27 +1,29 @@
 <%= form_with url: importance.import_path, method: :post do |form| %>
-  <table class="table">
+  <table class="<%= @layout.table_class %>">
     <thead>
       <tr>
-        <th></th>
+        <% @headers.each_with_index do |header, index| %>
+          <th>
+            <%= t('use_column_as') %>
+            <%= form.select "mappings[#{header.name}]",
+                            options_for_select(
+                              header.candidates.map { |c| [c.labels.first, c.key] },
+                              header.candidates.first&.key
+                            ), {}, class: @layout.select_class %>
+          </th>
+        <% end %>
+        <th><%= form.submit t('save'), class: @layout.submit_class %></th>
+      </tr>
+      <tr>
         <% @headers.each do |header| %>
           <th><%= header.name %></th>
         <% end %>
         <th></th>
       </tr>
-      <tr>
-        <th>Verwenden als</th>
-        <% @headers.each_with_index do |header, index| %>
-          <th>
-            <%= form.select "mappings[#{header.name}]", options_for_select(header.candidates.map { |c| [c.labels.first, c.key] }, header.candidates.first&.key) %>
-          </th>
-        <% end %>
-        <th><%= form.submit "Speichern" %></th>
-      </tr>
     </thead>
     <tbody>
       <% @samples.each do |sample| %>
         <tr>
-          <td></td>
           <% sample.each do |header, value| %>
             <td><%= value %></td>
           <% end %>

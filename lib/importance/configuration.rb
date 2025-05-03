@@ -1,13 +1,18 @@
 module Importance
   class Configuration
-    attr_accessor :importers
+    attr_accessor :importers, :layout
 
     def initialize
       @importers = {}
+      @layout = :blank
     end
 
     def register_importer(name, &block)
       @importers[name] = Importer.new(name, &block)
+    end
+
+    def set_layout(name)
+      @layout = name
     end
   end
 
