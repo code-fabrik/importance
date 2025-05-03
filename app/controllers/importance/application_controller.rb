@@ -1,5 +1,6 @@
 module Importance
   class ApplicationController < ::ApplicationController
-    layout 'layouts/application'
+    include Rails.application.routes.url_helpers
+    helper Rails.application.routes.url_helpers
   end
 end

@@ -1,5 +1,8 @@
 Rails.application.routes.draw do
-  mount Importance::Engine => "/importance"
-
+  
+  root to: "students#index"
+  
   resources :students, only: [:index]
+  
+  mount Importance::Engine => "/importance"
 end
