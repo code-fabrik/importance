@@ -43,7 +43,7 @@ Dropzone.js to create drag and drop interfaces, and you can style them just
 as you wish. Make sure the path stays, and it is a multipart form. 
 
 ```erb
-<%= form_with url: importance.map_path(importer: :students), multipart: true do |form| %>
+<%= form_with url: importance.submit_path(importer: :students), multipart: true do |form| %>
   <%= form.file_field :file %>
   <%= form.submit "Submit" %>
 <% end %>
