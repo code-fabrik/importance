@@ -15,6 +15,9 @@ You can define as many importers as you want.
 ```ruby
 Importance.configure do |config|
 
+  # Set the layout to be used for the form. Can be :default or :bootstrap
+  config.set_layout :bootstrap
+
   # Define an importer for students
   config.register_importer :students do |importer|
 
