@@ -29,7 +29,6 @@ rails generate importance:install
 ```
 
 This will create a configuration file at `config/initializers/importance.rb`.
-```
 
 ## Usage
 
