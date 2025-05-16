@@ -12,10 +12,6 @@ module Importance
       def add_route
         route 'mount Importance::Engine, at: "/importance"'
       end
-
-      def show_readme
-        readme "USAGE" if behavior == :invoke
-      end
     end
   end
 end
