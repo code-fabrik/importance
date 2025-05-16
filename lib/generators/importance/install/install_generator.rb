@@ -9,12 +9,12 @@ module Importance
         template "importance.rb", "config/initializers/importance.rb"
       end
 
-      def show_readme
-        readme "USAGE" if behavior == :invoke
-      end
-
       def add_route
         route 'mount Importance::Engine, at: "/importance"'
+      end
+
+      def show_readme
+        readme "USAGE" if behavior == :invoke
       end
     end
   end
