@@ -30,6 +30,8 @@ module Importance
     def map
       importer = Importance.configuration.importers[session[:importer].to_sym]
 
+      raise ArgumentError, "Importer cannot be nil" if importer.nil?
+
       workbook = Xsv.open(session[:path], parse_headers: true)
       worksheet = workbook.first
 
