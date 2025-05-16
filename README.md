@@ -28,7 +28,8 @@ Generate the initializer:
 rails generate importance:install
 ```
 
-This will create a configuration file at `config/initializers/importance.rb`.
+This will create a configuration file at `config/initializers/importance.rb` and mount
+the engine in `config/routes.rb`.
 
 ## Usage
 
