@@ -4,6 +4,33 @@ Importance allows users to select which columns of an Excel file should be
 imported and which ones should be ignored. This makes it possible to upload
 files with arbtirary headers, as long as all necessary data is contained.
 
+## Installation
+
+Add this line to your application's Gemfile:
+
+```ruby
+gem "importance"
+```
+
+And then execute:
+```bash
+$ bundle
+```
+
+Or install it yourself as:
+```bash
+$ gem install importance
+```
+
+Generate the initializer:
+
+```bash
+rails generate importance:install
+```
+
+This will create a configuration file at `config/initializers/importance.rb`.
+```
+
 ## Usage
 
 Importance allows you to define one or more `importers`, where each allows you
@@ -14,30 +41,52 @@ You can define as many importers as you want.
 
 ```ruby
 Importance.configure do |config|
-
-  # Set the layout to be used for the form. Can be :default or :bootstrap
   config.set_layout :bootstrap
 
-  # Define an importer for students
   config.register_importer :students do |importer|
-
-    # They each must contain first name, last name and email. Allow different spellings.
     importer.attribute :first_name, [ "Vorname", "vorname", "vname", "fname", "l_vorname" ]
     importer.attribute :last_name, [ "Nachname", "nachname", "nname", "lname", "l_nachname" ]
     importer.attribute :email, [ "E-Mail", "email", "mail", "l_email" ]
-
-    # When the mapping has run, process them in slices of 500.
+    
     importer.batch_size 500
+    
+    # Setup code runs before import
+    importer.setup do
+      @total_count = 0
+      @errors = []
+      @school = School.find(params[:school_id]) # Access to params
+      @current_time = Time.current
+    end
 
-    # For each entry of the file, create a new student record
+    # Main import logic has access to instance variables from setup
     importer.on_complete do |records|
+      @total_count += records.size
+      
       records.each do |record|
-        Student.create(first_name: record[:first_name], last_name: record[:last_name], email: record[:email])
+        begin
+          Student.create(
+            first_name: record[:first_name],
+            last_name: record[:last_name],
+            email: record[:email],
+            created_by: current_user.id,  # Access to current_user
+            school_id: @school.id         # Access to instance var from setup
+          )
+        rescue => e
+          @errors << { record: record, message: e.message }
+        end
       end
     end
+    
+    # Teardown code runs after import
+    importer.teardown do
+      # Can access both controller context and setup variables
+      ActivityLog.create(
+        user: current_user,
+        action: "import",
+        details: "Imported #{@total_count} students with #{@errors.size} errors"
+      )
+    end
   end
-
-  #...
 end
 ```
 
@@ -62,24 +111,6 @@ en:
     use_column_as: Use column as
     ignore: Ignore
     save: Save
-```
-
-## Installation
-
-Add this line to your application's Gemfile:
-
-```ruby
-gem "importance"
-```
-
-And then execute:
-```bash
-$ bundle
-```
-
-Or install it yourself as:
-```bash
-$ gem install importance
 ```
 
 ## Contributing

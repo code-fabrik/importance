@@ -51,30 +51,44 @@ module Importance
       workbook = Xsv.open(session[:path], parse_headers: true)
       worksheet = workbook.first
 
-      records_to_import = []
+      context = ImportContext.new(self)
 
-      worksheet.each_with_index do |row, index|
-        record = {}
-        row.each do |row_header, value|
-          attribute = mappings.permit!.to_h.find { |column_name, attribute_name| column_name == row_header }
-          next if attribute.nil?
-          attribute = attribute[1]
-          next if attribute == ""
-          record[attribute.to_sym] = value
+      context.instance_exec(&importer.setup_callback) if importer.setup_callback
+
+      begin
+        records_to_import = []
+
+        worksheet.each_with_index do |row, index|
+          record = {}
+          row.each do |row_header, value|
+            attribute = mappings.permit!.to_h.find { |column_name, attribute_name| column_name == row_header }
+            next if attribute.nil?
+            attribute = attribute[1]
+            next if attribute == ""
+            record[attribute.to_sym] = value
+          end
+          records_to_import << record
+
+          if importer.batch && records_to_import.size >= importer.batch
+            # Run callback in context
+            context.instance_exec(records_to_import, &importer.callback)
+            records_to_import = []
+          end
         end
-        records_to_import << record
 
-        if importer.batch && records_to_import.size >= importer.batch
-          importer.callback.call(records_to_import)
-          records_to_import = []
+        if records_to_import.any?
+          context.instance_exec(records_to_import, &importer.callback)
         end
-      end
 
-      if records_to_import.any?
-        importer.callback.call(records_to_import)
-      end
+        # Run teardown if defined
+        context.instance_exec(&importer.teardown_callback) if importer.teardown_callback
 
-      redirect_to session[:redirect_url] || root_path, notice: "Import completed."
+        redirect_to session[:redirect_url] || root_path, notice: "Import completed."
+      rescue => e
+        # Ensure teardown is called even if an error occurs
+        context.instance_exec(&importer.teardown_callback) if importer.teardown_callback
+        raise e
+      end
     end
   end
 end
