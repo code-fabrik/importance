@@ -10,7 +10,7 @@ module Importance
       end
 
       def add_route
-        route 'mount Importance::Engine, at: "/importance"'
+        route 'mount Importance::Engine, at: "/"'
       end
 
       def add_translations
