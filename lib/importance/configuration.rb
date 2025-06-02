@@ -37,8 +37,8 @@ module Importance
       @batch = size
     end
 
-    def perform(&callback)
-      @perform_callback = perform_callback
+    def perform(&block)
+      @perform_callback = block
     end
 
     def setup(&block)
