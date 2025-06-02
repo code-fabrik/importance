@@ -2,9 +2,10 @@ module Importance
   class ImportContext
     attr_reader :controller
 
-    def initialize(controller)
+    def initialize(controller, additional_data = {})
       @controller = controller
       @vars = {}
+      @vars[:additional_data] = additional_data if additional_data.present?
     end
 
     # Allow access to controller methods like current_user, params, etc.

@@ -22,6 +22,7 @@ module Importance
       session[:redirect_url] = request.referrer
       session[:path] = persist_path
       session[:importer] = params[:importer].to_sym
+      session[:additional_data] = params[:additional_data].present? ? params[:additional_data].to_json : {}.to_json 
 
       redirect_to map_path
     end
@@ -53,7 +54,8 @@ module Importance
       workbook = Xsv.open(session[:path], parse_headers: true)
       worksheet = workbook.first
 
-      context = ImportContext.new(self)
+      additional_data = session[:additional_data].present? ? JSON.parse(session[:additional_data], symbolize_names: true) : {}
+      context = ImportContext.new(self, additional_data)
 
       context.instance_exec(&importer.setup_callback) if importer.setup_callback
 
@@ -73,13 +75,13 @@ module Importance
 
           if importer.batch && records_to_import.size >= importer.batch
             # Run callback in context
-            context.instance_exec(records_to_import, &importer.callback)
+            context.instance_exec(records_to_import, &importer.perform_callback)
             records_to_import = []
           end
         end
 
         if records_to_import.any?
-          context.instance_exec(records_to_import, &importer.callback)
+          context.instance_exec(records_to_import, &importer.perform_callback)
         end
 
         # Run teardown if defined

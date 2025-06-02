@@ -59,7 +59,7 @@ Importance.configure do |config|
     end
 
     # Main import logic has access to instance variables from setup
-    importer.on_complete do |records|
+    importer.perform do |records|
       @total_count += records.size
       
       records.each do |record|
