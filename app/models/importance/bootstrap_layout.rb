@@ -11,5 +11,9 @@ module Importance
     def self.table_class
       "table"
     end
+
+    def self.wrapper_class
+      "table-responsive"
+    end
   end
 end

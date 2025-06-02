@@ -17,12 +17,14 @@ module Importance
   end
 
   class Importer
-    attr_reader :name, :attributes, :callback, :batch
+    attr_reader :name, :attributes, :perform_callback, :batch, :setup_callback, :teardown_callback
 
     def initialize(name, &block)
       @name = name
       @attributes = []
-      @callback = nil
+      @perform_callback = nil
+      @setup_callback = nil
+      @teardown_callback = nil
       @batch = false
       instance_eval(&block) if block_given?
     end
@@ -35,8 +37,16 @@ module Importance
       @batch = size
     end
 
-    def on_complete(&callback)
-      @callback = callback
+    def perform(&callback)
+      @perform_callback = perform_callback
+    end
+
+    def setup(&block)
+      @setup_callback = block
+    end
+
+    def teardown(&block)
+      @teardown_callback = block
     end
   end
 

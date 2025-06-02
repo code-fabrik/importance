@@ -1,6 +1,7 @@
 require "importance/version"
 require "importance/engine"
 require "importance/configuration"
+require "generators/importance/install/install_generator" if defined?(Rails::Generators)
 
 module Importance
   class << self

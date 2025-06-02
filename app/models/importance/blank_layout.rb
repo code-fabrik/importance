@@ -11,5 +11,9 @@ module Importance
     def self.table_class
       ""
     end
+
+    def self.wrapper_class
+      ""
+    end
   end
 end

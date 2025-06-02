@@ -1,0 +1,9 @@
+Description:
+    The importance:install generator creates an initializer file at 
+    config/initializers/importance.rb with a basic configuration.
+
+Examples:
+    rails generate importance:install
+
+    This will create:
+        config/initializers/importance.rb

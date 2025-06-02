@@ -1,35 +1,37 @@
 <%= form_with url: importance.import_path, method: :post do |form| %>
-  <table class="<%= @layout.table_class %>">
-    <thead>
-      <tr>
-        <% @headers.each_with_index do |header, index| %>
-          <th>
-            <%= t('importance.use_column_as') %>
-            <%= form.select "mappings[#{header.name}]",
-                            options_for_select(
-                              header.candidates.map { |c| [c.labels.first, c.key] },
-                              header.candidates.first&.key
-                            ), {}, class: @layout.select_class %>
-          </th>
-        <% end %>
-        <th><%= form.submit t('importance.save'), class: @layout.submit_class %></th>
-      </tr>
-      <tr>
-        <% @headers.each do |header| %>
-          <th><%= header.name %></th>
-        <% end %>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @samples.each do |sample| %>
+  <div class="<%= @layout.wrapper_class %>">
+    <table class="<%= @layout.table_class %>">
+      <thead>
         <tr>
-          <% sample.each do |header, value| %>
-            <td><%= value %></td>
+          <% @headers.each_with_index do |header, index| %>
+            <th>
+              <%= t('importance.use_column_as') %>
+              <%= form.select "mappings[#{header.name}]",
+                              options_for_select(
+                                header.candidates.map { |c| [c.labels.first, c.key] },
+                                header.candidates.first&.key
+                              ), {}, class: @layout.select_class %>
+            </th>
           <% end %>
-          <td></td>
+          <th><%= form.submit t('importance.save'), class: @layout.submit_class %></th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
+        <tr>
+          <% @headers.each do |header| %>
+            <th><%= header.name %></th>
+          <% end %>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @samples.each do |sample| %>
+          <tr>
+            <% sample.each do |header, value| %>
+              <td><%= value %></td>
+            <% end %>
+            <td></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
 <% end %>
