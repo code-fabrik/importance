@@ -10,7 +10,7 @@ Importance.configure do |config|
     importer.attribute :last_name, [ "Nachname", "nachname", "nname", "lname", "l_nachname" ]
     importer.attribute :email, [ "E-Mail", "email", "mail", "l_email" ]
     importer.batch_size 500
-    importer.on_complete do |records|
+    importer.perform do |records|
       records.each do |record|
         puts "Imported student: #{record.inspect}"
       end

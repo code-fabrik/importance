@@ -13,3 +13,7 @@
  *= require_tree .
  *= require_self
  */
+
+.importance-table td.ignored, .importance-table th.ignored {
+  color: #AAA;
+}

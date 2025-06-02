@@ -1,6 +1,6 @@
 <%= form_with url: importance.import_path, method: :post do |form| %>
-  <div class="<%= @layout.wrapper_class %>">
-    <table class="<%= @layout.table_class %>">
+  <div class="importance-wrapper <%= @layout.wrapper_class %>">
+    <table class="importance-table <%= @layout.table_class %>">
       <thead>
         <tr>
           <% @headers.each_with_index do |header, index| %>
@@ -35,3 +35,45 @@
     </table>
   </div>
 <% end %>
+
+<script>
+  const table = document.querySelector('.importance-table');
+  if (table) {
+    const selects = table.querySelectorAll('thead tr:first-child th select');
+    const dataRows = table.querySelectorAll('tbody tr, thead tr');
+
+    const updateIgnoredColumns = () => {
+      dataRows.forEach(row => {
+        Array.from(row.children).forEach(cell => {
+          if (cell.tagName === 'TD' || cell.tagName == 'TH') {
+            cell.classList.remove('ignored');
+          }
+        });
+      });
+
+      selects.forEach(selectElement => {
+        if (selectElement.value === "") {
+          const headerCell = selectElement.closest('th');
+          if (headerCell && headerCell.parentElement) {
+            const columnIndex = Array.from(headerCell.parentElement.children).indexOf(headerCell);
+
+            if (columnIndex !== -1) {
+              dataRows.forEach(row => {
+                const cell = row.children[columnIndex];
+                if (cell && (cell.tagName === 'TD' || cell.tagName === 'TH')) {
+                  cell.classList.add('ignored');
+                }
+              });
+            }
+          }
+        }
+      });
+    };
+
+    updateIgnoredColumns();
+
+    selects.forEach(selectElement => {
+      selectElement.addEventListener('change', updateIgnoredColumns);
+    });
+  }
+</script>
