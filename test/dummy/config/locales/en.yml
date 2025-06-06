@@ -28,7 +28,3 @@
 #       enabled: "ON"
 
 en:
-  importance:
-    use_column_as: Use column as
-    ignore: Ignore
-    save: Save

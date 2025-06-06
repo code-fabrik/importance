@@ -1,0 +1,5 @@
+it:
+  importance:
+    use_column_as: Utilizzare come
+    ignore: Ignora
+    import: Importare
