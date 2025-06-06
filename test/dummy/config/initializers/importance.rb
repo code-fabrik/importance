@@ -10,12 +10,20 @@ Importance.configure do |config|
     importer.attribute :last_name, [ "Nachname", "nachname", "nname", "lname", "l_nachname" ]
     importer.attribute :email, [ "E-Mail", "email", "mail", "l_email" ]
     importer.batch_size 500
+
+    importer.setup do |importer|
+      @errors = []
+    end
+
     importer.perform do |records|
       records.each do |record|
+        @errors << "Test"
         puts "Imported student: #{record.inspect}"
       end
     end
+
     importer.after_import do |importer|
+      puts @errors
       redirect_to rails_routes.root_path, notice: "Import completed successfully."
     end
   end

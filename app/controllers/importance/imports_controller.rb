@@ -21,7 +21,6 @@ module Importance
 
       session[:path] = persist_path
       session[:importer] = params[:importer].to_sym
-      session[:additional_data] = params[:additional_data].present? ? params[:additional_data].to_json : {}.to_json
 
       redirect_to map_path
     end
@@ -53,10 +52,9 @@ module Importance
       workbook = Xsv.open(session[:path], parse_headers: true)
       worksheet = workbook.first
 
-      additional_data = session[:additional_data].present? ? JSON.parse(session[:additional_data], symbolize_names: true) : {}
-      context = ImportContext.new(self, additional_data)
-
-      context.instance_exec(&importer.setup_callback) if importer.setup_callback
+      if importer.setup_callback
+        instance_exec(&importer.setup_callback)
+      end
 
       begin
         records_to_import = []
@@ -73,29 +71,25 @@ module Importance
           records_to_import << record
 
           if importer.batch && records_to_import.size >= importer.batch
-            # Run callback in context
-            context.instance_exec(records_to_import, &importer.perform_callback)
+            instance_exec(records_to_import, &importer.perform_callback)
             records_to_import = []
           end
         end
 
         if records_to_import.any?
-          context.instance_exec(records_to_import, &importer.perform_callback)
+          instance_exec(records_to_import, &importer.perform_callback)
         end
 
-        # Run teardown if defined
-        context.instance_exec(&importer.teardown_callback) if importer.teardown_callback
-
-        # Run after import callback
-        if importer.after_import_callback
-          instance_exec(&importer.after_import_callback)
+        if importer.teardown_callback
+          instance_exec(&importer.teardown_callback)
         else
           redirect_to session[:redirect_url] || root_path, notice: "Import completed."
         end
+
       rescue => e
-        # Ensure teardown is called even if an error occurs
-        context.instance_exec(&importer.teardown_callback) if importer.teardown_callback
-        raise e
+        if importer.error_callback
+          instance_exec(e, &importer.error_callback)
+        end
       end
     end
 

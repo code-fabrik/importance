@@ -1,3 +1,5 @@
+require "ostruct"
+
 module Importance
   class Configuration
     attr_accessor :importers, :layout
@@ -17,7 +19,7 @@ module Importance
   end
 
   class Importer
-    attr_reader :name, :attributes, :perform_callback, :batch, :setup_callback, :teardown_callback, :after_import_callback
+    attr_reader :name, :attributes, :perform_callback, :batch, :setup_callback, :teardown_callback, :after_import_callback, :error_callback
 
     def initialize(name, &block)
       @name = name
@@ -26,6 +28,7 @@ module Importance
       @setup_callback = nil
       @teardown_callback = nil
       @after_import_callback = nil
+      @error_callback = nil
       @batch = false
       instance_eval(&block) if block_given?
     end
@@ -52,6 +55,10 @@ module Importance
 
     def after_import(&block)
       @after_import_callback = block
+    end
+
+    def error(&block)
+      @error_callback = block
     end
   end
 
