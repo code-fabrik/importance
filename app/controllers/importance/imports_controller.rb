@@ -19,10 +19,9 @@ module Importance
 
       FileUtils.mv(upload_path, persist_path)
 
-      session[:redirect_url] = request.referrer
       session[:path] = persist_path
       session[:importer] = params[:importer].to_sym
-      session[:additional_data] = params[:additional_data].present? ? params[:additional_data].to_json : {}.to_json 
+      session[:additional_data] = params[:additional_data].present? ? params[:additional_data].to_json : {}.to_json
 
       redirect_to map_path
     end
@@ -87,12 +86,23 @@ module Importance
         # Run teardown if defined
         context.instance_exec(&importer.teardown_callback) if importer.teardown_callback
 
-        redirect_to session[:redirect_url] || root_path, notice: "Import completed."
+        # Run after import callback
+        if importer.after_import_callback
+          instance_exec(&importer.after_import_callback)
+        else
+          redirect_to session[:redirect_url] || root_path, notice: "Import completed."
+        end
       rescue => e
         # Ensure teardown is called even if an error occurs
         context.instance_exec(&importer.teardown_callback) if importer.teardown_callback
         raise e
       end
+    end
+
+    private
+
+    def rails_routes
+      ::Rails.application.routes.url_helpers
     end
   end
 end

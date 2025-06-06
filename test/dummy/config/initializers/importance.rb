@@ -15,5 +15,8 @@ Importance.configure do |config|
         puts "Imported student: #{record.inspect}"
       end
     end
+    importer.after_import do |importer|
+      redirect_to rails_routes.root_path, notice: "Import completed successfully."
+    end
   end
 end
