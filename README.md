@@ -88,8 +88,8 @@ Importance.configure do |config|
     end
 
     # Controller code to run after the import
-    importer.after_import do |importer|
-      redirect_to rails_routes.root_path, notice: "Import completed successfully."
+    importer.error do |importer|
+      redirect_to rails_routes.root_path, alert: "Import had errors!"
     end
   end
 end

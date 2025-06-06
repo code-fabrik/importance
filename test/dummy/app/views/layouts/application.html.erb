@@ -23,7 +23,7 @@
   </head>
 
   <body>
-    <nav>NAVIGATION: <%= link_to 'Home', root_path %></nav>
+    <nav>NAVIGATION: <%= link_to 'Home', root_path %> (<%= Current.user.email %>)</nav>
 
     <% if notice %>
       <%= notice %>

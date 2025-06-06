@@ -22,7 +22,7 @@ Importance.configure do |config|
       end
     end
 
-    importer.after_import do |importer|
+    importer.teardown do |importer|
       puts @errors
       redirect_to rails_routes.root_path, notice: "Import completed successfully."
     end
