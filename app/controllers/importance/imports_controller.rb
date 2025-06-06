@@ -35,9 +35,8 @@ module Importance
       worksheet = workbook.first
 
       file_headers = worksheet.first.keys
-      @headers = importer.attributes.map do |attribute|
-        Importance::Header.new(attribute, file_headers)
-      end
+      @file_headers = file_headers
+      @importer_attributes = importer.attributes
       @samples = worksheet.first(5)
 
       @layout = "Importance::#{Importance.configuration.layout.to_s.camelize}Layout".constantize

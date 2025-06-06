@@ -3,21 +3,26 @@
     <table class="importance-table <%= @layout.table_class %>">
       <thead>
         <tr>
-          <% @headers.each_with_index do |header, index| %>
+          <% @file_headers.each do |file_header| %>
             <th>
               <%= t('importance.use_column_as') %>
-              <%= form.select "mappings[#{header.candidates.first}]",
+              <%
+                attribute_mappings = Importance::Header.match_attributes_to_headers(@importer_attributes, @file_headers)
+                default_value = Importance::Header.default_value_for_header(file_header, attribute_mappings)
+              %>
+              <%= form.select "mappings[#{file_header}]",
                               options_for_select(
-                                header.candidates.map { |c| [c, header.attribute.key] } + [["", ""]],
-                                header.candidates.first == I18n.t("importance.ignore") ? "" : header.attribute.key
+                                [[t('importance.ignore'), ""]] + 
+                                @importer_attributes.map { |attr| [attr.labels.first, attr.key] },
+                                default_value
                               ), {}, class: @layout.select_class %>
             </th>
           <% end %>
           <th><%= form.submit t('importance.import'), class: @layout.submit_class %></th>
         </tr>
         <tr>
-          <% @headers.each do |header| %>
-            <th><%= header.attribute.labels.first %></th>
+          <% @file_headers.each do |file_header| %>
+            <th><%= file_header %></th>
           <% end %>
           <th></th>
         </tr>
@@ -25,8 +30,8 @@
       <tbody>
         <% @samples.each do |sample| %>
           <tr>
-            <% sample.each do |header, value| %>
-              <td><%= value %></td>
+            <% @file_headers.each do |file_header| %>
+              <td><%= sample[file_header] %></td>
             <% end %>
             <td></td>
           </tr>
