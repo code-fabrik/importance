@@ -65,7 +65,7 @@ module Importance
             attribute = mappings.permit!.to_h.find { |column_name, attribute_name| column_name == row_header }
             next if attribute.nil?
             attribute = attribute[1]
-            next if attribute == ""
+            next if attribute.nil? || attribute == ""
             record[attribute.to_sym] = value
           end
           records_to_import << record
