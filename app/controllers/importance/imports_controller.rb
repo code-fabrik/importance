@@ -34,8 +34,9 @@ module Importance
       workbook = Xsv.open(session[:path], parse_headers: true)
       worksheet = workbook.first
 
-      @headers = worksheet.first.keys.map do |cell|
-        Importance::Header.new(cell, importer.attributes)
+      file_headers = worksheet.first.keys
+      @headers = importer.attributes.map do |attribute|
+        Importance::Header.new(attribute, file_headers)
       end
       @samples = worksheet.first(5)
 

@@ -1,25 +1,25 @@
 module Importance
   class Header
-    attr_reader :name, :attributes
+    attr_reader :attribute, :file_headers
 
-    def initialize(name, attributes)
-      @name = name
-      @attributes = attributes
+    def initialize(attribute, file_headers)
+      @attribute = attribute
+      @file_headers = file_headers
     end
 
     def candidates
-      # Compare header name and attribute header and find best match
-      attribute_with_similiarity = attributes.map do |attribute|
+      # Compare attribute labels with file headers and find best matches
+      header_with_similarity = file_headers.map do |header|
         distances = attribute.labels.map do |label|
-          DidYouMean::Levenshtein.distance(name, label)
+          DidYouMean::Levenshtein.distance(header, label)
         end
         distance = distances.min
-        percentage = distance / name.length.to_f
+        percentage = distance / header.length.to_f
         similarity = 1 - percentage
-        [ attribute, similarity ]
+        [ header, similarity ]
       end
-      dummy_entry = [ OpenStruct.new(key: nil, labels: [ I18n.t("importance.ignore") ]), 0.6 ]
-      (attribute_with_similiarity + [ dummy_entry ]).sort_by { |_, similarity| similarity }.reverse.map { |attribute, _| attribute }
+      dummy_entry = [ I18n.t("importance.ignore"), 0.6 ]
+      (header_with_similarity + [ dummy_entry ]).sort_by { |_, similarity| similarity }.reverse.map { |header, _| header }
     end
   end
 end

@@ -36,6 +36,21 @@ module Importance
       end
     end
 
+    test "map should create headers for each attribute with file columns as candidates" do
+      file = fixture_file_upload("test_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+      post submit_path, params: { file: file, importer: "test_importer" }
+      
+      get map_path
+      
+      assert_response :success
+      # Test that the page renders successfully with the new Header interface
+      assert_select "table.importance-table" do
+        assert_select "thead tr", 2  # Header row for selects and header row for attribute names
+        assert_select "thead tr:first-child th", 3  # 2 attributes + 1 submit button column
+        assert_select "thead tr:last-child th", 3   # 2 attribute labels + 1 empty column
+      end
+    end
+
     test "import should process XLSX file with mappings" do
       # First submit the test file to set up session
       file = fixture_file_upload("test_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

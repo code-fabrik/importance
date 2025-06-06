@@ -6,10 +6,10 @@
           <% @headers.each_with_index do |header, index| %>
             <th>
               <%= t('importance.use_column_as') %>
-              <%= form.select "mappings[#{header.name}]",
+              <%= form.select "mappings[#{header.candidates.first}]",
                               options_for_select(
-                                header.candidates.map { |c| [c.labels.first, c.key] },
-                                header.candidates.first&.key
+                                header.candidates.map { |c| [c, header.attribute.key] } + [["", ""]],
+                                header.candidates.first == I18n.t("importance.ignore") ? "" : header.attribute.key
                               ), {}, class: @layout.select_class %>
             </th>
           <% end %>
@@ -17,7 +17,7 @@
         </tr>
         <tr>
           <% @headers.each do |header| %>
-            <th><%= header.name %></th>
+            <th><%= header.attribute.labels.first %></th>
           <% end %>
           <th></th>
         </tr>
