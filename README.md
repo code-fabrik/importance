@@ -86,6 +86,11 @@ Importance.configure do |config|
         details: "Imported #{@total_count} students with #{@errors.size} errors"
       )
     end
+
+    # Controller code to run after the import
+    importer.after_import do |importer|
+      redirect_to rails_routes.root_path, notice: "Import completed successfully."
+    end
   end
 end
 ```
