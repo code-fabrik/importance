@@ -68,6 +68,10 @@ module Importance
             next if attribute.nil? || attribute == ""
             record[attribute.to_sym] = value
           end
+
+          # Skip empty rows (rows where all values are nil or empty)
+          next if record.empty? || record.values.all? { |v| v.nil? || v.to_s.strip.empty? }
+
           records_to_import << record
 
           if importer.batch && records_to_import.size >= importer.batch
