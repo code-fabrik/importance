@@ -1,4 +1,5 @@
 require "xsv"
+require "csv"
 
 module Importance
   class ImportsController < ApplicationController
@@ -35,14 +36,18 @@ module Importance
 
       raise ArgumentError, "Importer cannot be nil" if importer.nil?
 
-      workbook = Xsv.open(session[:path], parse_headers: true)
-      worksheet = workbook.first
+      if csv_file?
+        csv_data = CSV.read(session[:path], headers: true)
+        @file_headers = csv_data.headers
+        @samples = csv_data.first(5).map(&:to_h)
+      else
+        workbook = Xsv.open(session[:path], parse_headers: true)
+        worksheet = workbook.first
+        @file_headers = worksheet.first.keys
+        @samples = worksheet.first(5)
+      end
 
-      file_headers = worksheet.first.keys
-      @file_headers = file_headers
       @importer_attributes = importer.attributes
-      @samples = worksheet.first(5)
-
       @layout = "Importance::#{Importance.configuration.layout.to_s.camelize}Layout".constantize
     end
 
@@ -53,9 +58,6 @@ module Importance
 
       raise ArgumentError, "Mapping cannot be nil" if mappings.nil?
 
-      workbook = Xsv.open(session[:path], parse_headers: true)
-      worksheet = workbook.first
-
       if importer.setup_callback
         instance_exec(&importer.setup_callback)
       end
@@ -63,19 +65,7 @@ module Importance
       begin
         records_to_import = []
 
-        worksheet.each_with_index do |row, index|
-          record = {}
-          row.each do |row_header, value|
-            attribute = mappings.permit!.to_h.find { |column_name, attribute_name| column_name == row_header }
-            next if attribute.nil?
-            attribute = attribute[1]
-            next if attribute.nil? || attribute == ""
-            record[attribute.to_sym] = value
-          end
-
-          # Skip empty rows (rows where all values are nil or empty)
-          next if record.empty? || record.values.all? { |v| v.nil? || v.to_s.strip.empty? }
-
+        each_processed_row(mappings) do |record|
           records_to_import << record
 
           if importer.batch && records_to_import.size >= importer.batch
@@ -102,6 +92,40 @@ module Importance
     end
 
     private
+
+    def csv_file?
+      File.extname(session[:path]).downcase == ".csv"
+    end
+
+    def each_processed_row(mappings)
+      if csv_file?
+        CSV.foreach(session[:path], headers: true) do |row|
+          record = process_row(row.to_h, mappings)
+          next if record.empty? || record.values.all? { |v| v.nil? || v.to_s.strip.empty? }
+          yield record
+        end
+      else
+        workbook = Xsv.open(session[:path], parse_headers: true)
+        worksheet = workbook.first
+        worksheet.each do |row|
+          record = process_row(row, mappings)
+          next if record.empty? || record.values.all? { |v| v.nil? || v.to_s.strip.empty? }
+          yield record
+        end
+      end
+    end
+
+    def process_row(row, mappings)
+      record = {}
+      row.each do |row_header, value|
+        attribute = mappings.permit!.to_h.find { |column_name, attribute_name| column_name == row_header }
+        next if attribute.nil?
+        attribute = attribute[1]
+        next if attribute.nil? || attribute == ""
+        record[attribute.to_sym] = value
+      end
+      record
+    end
 
     def rails_routes
       ::Rails.application.routes.url_helpers
