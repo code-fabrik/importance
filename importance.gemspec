@@ -6,8 +6,8 @@ Gem::Specification.new do |spec|
   spec.authors     = [ "Lukas_Skywalker" ]
   spec.email       = [ "git@lukasdiener.ch" ]
   spec.homepage    = "https://github.com/code-fabrik/importance"
-  spec.summary     = "Importer wizard for Excel files"
-  spec.description = "Importance allows users to select what columns to map to what attribute, and what columns to ignore."
+  spec.summary     = "Flexible Excel import engine with column mapping for Rails applications"
+  spec.description = "Importance is a Rails engine that allows users to upload Excel files and interactively map columns to model attributes. It handles files with arbitrary headers by letting users select which columns to import and which to ignore, with support for flexible attribute mapping, batch processing, error handling, and customizable import workflows."
   spec.license     = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the "allowed_push_host"
