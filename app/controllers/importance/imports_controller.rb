@@ -8,9 +8,13 @@ module Importance
 
       raise ArgumentError, "Upload cannot be nil" if upload.nil?
 
+      upload_extension = File.extname(upload.original_filename).downcase
+      supported_extensions = [ ".xlsx", ".xls", ".csv" ]
+
+      raise ArgumentError, "Unsupported file format. Please upload Excel (.xlsx, .xls) or CSV (.csv) files." unless supported_extensions.include?(upload_extension)
+
       system_tmp_dir = Dir.tmpdir
       upload_path = upload.tempfile.path
-      upload_extension = File.extname(upload.original_filename)
       persist_filename = "#{SecureRandom.uuid}#{upload_extension}"
 
       persist_path =  File.join(system_tmp_dir, persist_filename)

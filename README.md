@@ -1,8 +1,8 @@
 # Importance
 
-Importance allows users to select which columns of an Excel file should be
+Importance allows users to select which columns of an Excel or CSV file should be
 imported and which ones should be ignored. This makes it possible to upload
-files with arbtirary headers, as long as all necessary data is contained.
+files with arbitrary headers, as long as all necessary data is contained.
 
 ## Installation
 
@@ -122,11 +122,14 @@ end
 
 Add a file upload form to your application. You can use libraries like
 Dropzone.js to create drag and drop interfaces, and you can style them just
-as you wish. Make sure the path stays, and it is a multipart form. 
+as you wish. Make sure the path stays, and it is a multipart form.
+
+The gem supports Excel files (.xlsx, .xls) and CSV files (.csv). For CSV files,
+the first row is automatically treated as the header row.
 
 ```erb
 <%= form_with url: importance.submit_path(importer: :students), multipart: true do |form| %>
-  <%= form.file_field :file %>
+  <%= form.file_field :file, accept: ".xlsx,.xls,.csv" %>
   <%= form.submit "Submit" %>
 <% end %>
 ```
