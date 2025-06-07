@@ -39,6 +39,16 @@ to define a different treatment of the data you uploaded.
 Define the uploaders in an initializer, for example `config/initializers/importance.rb`.
 You can define as many importers as you want.
 
+Each importer can define callbacks that control what is done before the import, during the import,
+after the import and if any errors occurred.
+
+| Callback | Usage |
+|---|---|
+| `setup` | Code to be run once before the import. Initialization of an error array, loading of required parent records |
+| `perform` | The actual import logic. This block receives a collection of `records` for which you write the logic to import. It may be called multiple times if the dataset is large. |
+| `teardown` | Code to be run one after the import. Cleanup, flushing data to a log. |
+| `error` | Callback if any unhandled exception occurred. Recives the exception as a parameter. |
+
 ```ruby
 Importance.configure do |config|
   config.set_layout :bootstrap
@@ -55,7 +65,6 @@ Importance.configure do |config|
       @total_count = 0
       @errors = []
       @school = School.find(params[:school_id]) # Access to params
-      @current_time = Time.current
     end
 
     # Main import logic has access to instance variables from setup
@@ -85,11 +94,27 @@ Importance.configure do |config|
         action: "import",
         details: "Imported #{@total_count} students with #{@errors.size} errors"
       )
+      
+      # Display errors to the user if any occurred
+      if @errors.any?
+        # Store errors in database to avoid session size limits (4KB)
+        import_log = ImportLog.create!(
+          user: current_user,
+          total_records: @total_count,
+          error_count: @errors.size,
+          errors_data: @errors.to_json
+        )
+        
+        flash[:alert] = "Import completed with #{@errors.size} errors. Please review the details below."
+        redirect_to rails_routes.import_log_path(import_log)
+      else
+        redirect_to rails_routes.students_path, notice: "Successfully imported #{@total_count} students."
+      end
     end
 
     # Controller code to run after the import
-    importer.error do |importer|
-      redirect_to rails_routes.root_path, alert: "Import had errors!"
+    importer.error do |exception|
+      redirect_to rails_routes.root_path, alert: "Import failed: #{exception.message}"
     end
   end
 end
@@ -106,6 +131,63 @@ as you wish. Make sure the path stays, and it is a multipart form.
 <% end %>
 ```
 
+### Displaying Import Errors
+
+If you collect errors in the `@errors` variable during import (as shown in the example above), you can display them to users in your views. Since sessions have a 4KB limit, errors are stored in the database:
+
+First, create an ImportLog model to store the errors:
+
+```ruby
+# app/models/import_log.rb
+class ImportLog < ApplicationRecord
+  belongs_to :user
+  
+  def errors_array
+    JSON.parse(errors_data || '[]')
+  end
+end
+```
+
+```ruby
+# Migration
+class CreateImportLogs < ActiveRecord::Migration[7.0]
+  def change
+    create_table :import_logs do |t|
+      t.references :user, null: false, foreign_key: true
+      t.integer :total_records
+      t.integer :error_count
+      t.text :errors_data
+      t.timestamps
+    end
+  end
+end
+```
+
+Then display the errors in your view:
+
+```erb
+<!-- In your import_logs/show.html.erb view -->
+<div class="alert alert-warning">
+  <h4>Import Errors</h4>
+  <p>The following <%= @import_log.error_count %> records could not be imported:</p>
+  
+  <% errors = @import_log.errors_array %>
+  <% if errors.size > 50 %>
+    <p><em>Showing first 50 errors (total: <%= errors.size %>)</em></p>
+    <% errors = errors.first(50) %>
+  <% end %>
+  
+  <ul>
+    <% errors.each do |error| %>
+      <li>
+        <strong>Row data:</strong> <%= error["record"].inspect %><br>
+        <strong>Error:</strong> <%= error["message"] %>
+      </li>
+    <% end %>
+  </ul>
+</div>
+```
+
 ## Customization
 
 The following translations can be overriden by the application
@@ -115,11 +197,13 @@ en:
   importance:
     use_column_as: Use column as
     ignore: Ignore
-    save: Save
+    import: Import
 ```
 
 ## Contributing
+
 Contribution directions go here.
 
 ## License
+
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
