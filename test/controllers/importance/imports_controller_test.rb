@@ -8,8 +8,8 @@ module Importance
       # Configure a test importer using the sample XLSX file structure
       Importance.configure do |config|
         config.register_importer(:test_importer) do
-          attribute :name, ["Name"]
-          attribute :email, ["Email"]
+          attribute :name, [ "Name" ]
+          attribute :email, [ "Email" ]
           perform do |records|
             # Store records for verification (in real use, this would save to database)
             @controller.instance_variable_set(:@imported_records, records)
@@ -20,9 +20,9 @@ module Importance
 
     test "submit should persist file and redirect to map page" do
       file = fixture_file_upload("test_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-      
+
       post submit_path, params: { file: file, importer: "test_importer" }
-      
+
       assert_response :redirect
       assert_redirected_to map_path
       assert @request.session[:path].present?
@@ -39,9 +39,9 @@ module Importance
     test "map should create headers for each attribute with file columns as candidates" do
       file = fixture_file_upload("test_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       post submit_path, params: { file: file, importer: "test_importer" }
-      
+
       get map_path
-      
+
       assert_response :success
       # Test that the page renders successfully with the new Header interface
       assert_select "table.importance-table" do
@@ -55,20 +55,20 @@ module Importance
       # First submit the test file to set up session
       file = fixture_file_upload("test_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       post submit_path, params: { file: file, importer: "test_importer" }
-      
+
       # Define column mappings from XLSX headers to importer attributes
       mappings = {
         "name" => "name",    # Map "name" column to :name attribute
         "email" => "email"   # Map "email" column to :email attribute
       }
-      
+
       # Process the import
       assert_nothing_raised do
         post import_path, params: { mappings: mappings }
       end
-      
+
       # Import should complete successfully
-      assert_includes [204, 302], response.status
+      assert_includes [ 204, 302 ], response.status
     end
 
     teardown do
