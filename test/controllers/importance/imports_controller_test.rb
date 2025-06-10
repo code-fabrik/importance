@@ -46,8 +46,8 @@ module Importance
       # Test that the page renders successfully with the new Header interface
       assert_select "table.importance-table" do
         assert_select "thead tr", 2  # Header row for selects and header row for attribute names
-        assert_select "thead tr:first-child th", 3  # 2 attributes + 1 submit button column
-        assert_select "thead tr:last-child th", 3   # 2 attribute labels + 1 empty column
+        assert_select "thead tr:first-child th", 2  # 2 attribute headers
+        assert_select "thead tr:last-child th", 2   # 2 attribute labels
       end
     end
 
