@@ -24,7 +24,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rails", ">= 7.0.2"
   spec.add_dependency "xsv", "~> 1.3"
-
-  spec.add_development_dependency "ostruct", "~> 0.6"
-  spec.add_development_dependency "debug", "~> 1.10"
+  spec.add_dependency "ostruct", "~> 0.6"
 end
