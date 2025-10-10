@@ -3,3 +3,4 @@ fr:
     use_column_as: Utiliser la colonne comme
     ignore: Ignorer
     import: Importer
+    import_description: "Affichage de %{count} sur %{full_count} exemples d'enregistrements."

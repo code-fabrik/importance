@@ -17,14 +17,16 @@ Importance.configure do |config|
 
     importer.perform do |records|
       records.each do |record|
-        @errors << "Test"
         puts "Imported student: #{record.inspect}"
       end
     end
 
     importer.teardown do |importer|
-      puts @errors
       redirect_to rails_routes.root_path, notice: "Import completed successfully."
+    end
+
+    importer.error do |error|
+      redirect_to rails_routes.root_path, alert: error.full_message
     end
   end
 end

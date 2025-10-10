@@ -23,16 +23,25 @@
   </head>
 
   <body>
-    <nav>NAVIGATION: <%= link_to 'Home', root_path %> (<%= Current.user.email %>)</nav>
 
-    <% if notice %>
-      <%= notice %>
-    <% end %>
-    <% if alert %>
-      <%= alert %>
-    <% end %>
+    <div class="container">
+      <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+          <div class="navbar-brand">NAVIGATION</div>
+          <div class="navbar-item"><%= link_to 'Home', root_path %></div>
+          <div class="navbar-item"><%= Current.user.email %></div>
+        </div>
+      </nav>
 
-    <%= yield %>
+      <% if notice %>
+        <%= notice %>
+      <% end %>
+      <% if alert %>
+        <%= alert %>
+      <% end %>
+
+      <%= yield %>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
   </body>
 </html>

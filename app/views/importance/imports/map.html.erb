@@ -4,14 +4,14 @@
     <table class="importance-table <%= @layout.table_class %>">
       <thead>
         <tr>
-          <% @file_headers.each do |file_header| %>
+          <% @file_headers.each_with_index do |file_header, file_header_idx| %>
             <th>
               <%= t('importance.use_column_as') %>
               <%
                 attribute_mappings = Importance::Header.match_attributes_to_headers(@importer_attributes, @file_headers)
                 default_value = Importance::Header.default_value_for_header(file_header, attribute_mappings)
               %>
-              <%= form.select "mappings[#{file_header}]",
+              <%= form.select "mappings[#{file_header_idx}]",
                               options_for_select(
                                 [[t('importance.ignore'), ""]] + 
                                 @importer_attributes.map { |attr| [attr.labels.first, attr.key] },
@@ -29,13 +29,16 @@
       <tbody>
         <% @samples.each do |sample| %>
           <tr>
-            <% @file_headers.each do |file_header| %>
-              <td><%= sample[file_header] %></td>
+            <% @file_headers.each_with_index do |file_header, file_header_idx| %>
+              <td><%= sample[file_header_idx] %></td>
             <% end %>
           </tr>
         <% end %>
       </tbody>
     </table>
+    <p>
+      <%= t('importance.import_description', count: @samples.count, full_count: @full_count) %>
+    </p>
   </div>
 <% end %>
 

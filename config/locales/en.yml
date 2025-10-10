@@ -3,3 +3,4 @@ en:
     use_column_as: Use column as
     ignore: Ignore
     import: Import
+    import_description: "Showing %{count} of %{full_count} sample records."

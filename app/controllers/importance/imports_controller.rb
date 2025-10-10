@@ -1,4 +1,4 @@
-require "xsv"
+require "roo"
 require "csv"
 
 module Importance
@@ -36,22 +36,19 @@ module Importance
 
       raise ArgumentError, "Importer cannot be nil" if importer.nil?
 
-      if csv_file?
-        csv_data = CSV.read(session[:path], headers: true)
-        @file_headers = csv_data.headers
-        @samples = csv_data.first(5).map(&:to_h)
-      else
-        workbook = Xsv.open(session[:path], parse_headers: true)
-        worksheet = workbook.first
-        @file_headers = worksheet.first.keys
-        @samples = worksheet.first(5)
-      end
+      workbook = Roo::Spreadsheet.open(session[:path], { csv_options: { encoding: "bom|utf-8" } })
+      worksheet = workbook.sheet(0)
+      @file_headers = worksheet.row(1)
+      @samples = worksheet.parse[1..5]
+      @full_count = worksheet.count - 1
 
       @importer_attributes = importer.attributes
       @layout = "Importance::#{Importance.configuration.layout.to_s.camelize}Layout".constantize
     end
 
     # Import page. Load the file according to the mapping and import it.
+    # Mappings param is of the form mappings[excel_column_idx] = target_attribute
+    # mappings[0] = "first_name", mappings[1] = "", mappings[2] = "last_name" ...
     def import
       importer = Importance.configuration.importers[session[:importer].to_sym]
       mappings = params[:mappings]
@@ -97,33 +94,31 @@ module Importance
       File.extname(session[:path]).downcase == ".csv"
     end
 
+    # Yields each processed row (a hash of attribute => value) to the given block.
+    # Skips empty rows (all values nil or empty).
     def each_processed_row(mappings)
-      if csv_file?
-        CSV.foreach(session[:path], headers: true) do |row|
-          record = process_row(row.to_h, mappings)
-          next if record.empty? || record.values.all? { |v| v.nil? || v.to_s.strip.empty? }
-          yield record
-        end
-      else
-        workbook = Xsv.open(session[:path], parse_headers: true)
-        worksheet = workbook.first
-        worksheet.each do |row|
-          record = process_row(row, mappings)
-          next if record.empty? || record.values.all? { |v| v.nil? || v.to_s.strip.empty? }
-          yield record
-        end
+      workbook = Roo::Spreadsheet.open(session[:path], { csv_options: { encoding: "bom|utf-8" } })
+      worksheet = workbook.sheet(0)
+      worksheet.each_with_index do |row, idx|
+        next if idx == 0 # Skip header row
+        record = process_row(row, mappings)
+        next if record.empty? || record.values.all? { |v| v.nil? || v.to_s.strip.empty? }
+        yield record
       end
     end
 
+    # Turn a row of the form ["Hans", "Robert", 1970, "male", "Apple Inc.", "hr@apple.com"]
+    # and a mapping of the form {"0"=>"first_name", "1"=>"last_name", "2"=>"", "3"=>"", "4"=>"", "5"=>"email"}
+    # into a record of the form { first_name: "Hans", last_name: "Robert", email: "hr@apple.com" }
     def process_row(row, mappings)
       record = {}
-      row.each do |row_header, value|
-        attribute = mappings.permit!.to_h.find { |column_name, attribute_name| column_name == row_header }
-        next if attribute.nil?
-        attribute = attribute[1]
-        next if attribute.nil? || attribute == ""
-        record[attribute.to_sym] = value
+
+      mappings.each do |column_index, attribute_name|
+        next if attribute_name.nil? || attribute_name == ""
+        value = row[column_index.to_i]
+        record[attribute_name.to_sym] = value
       end
+
       record
     end
 
