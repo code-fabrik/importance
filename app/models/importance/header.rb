@@ -14,8 +14,8 @@ module Importance
               best_similarity = 1.0
               break # No need to check further if an exact match is found
             end
-            distance = DidYouMean::Levenshtein.distance(header, label)
-            percentage = distance / header.length.to_f
+            distance = DidYouMean::Levenshtein.distance(header.to_s, label.to_s)
+            percentage = distance / header.to_s.length.to_f
             similarity = 1 - percentage
             if similarity > best_similarity
               best_similarity = similarity
