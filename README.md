@@ -130,6 +130,7 @@ the first row is automatically treated as the header row.
 ```erb
 <%= form_with url: importance.submit_path(importer: :students), multipart: true do |form| %>
   <%= form.file_field :file, accept: ".xlsx,.xls,.csv" %>
+  <%= form.hidden_field :redirect_url, value: root_path >
   <%= form.submit "Submit" %>
 <% end %>
 ```

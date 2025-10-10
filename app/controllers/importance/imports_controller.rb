@@ -26,6 +26,7 @@ module Importance
 
       session[:path] = persist_path
       session[:importer] = params[:importer].to_sym
+      session[:redirect_url] = params[:redirect_url]
 
       redirect_to map_path
     end
@@ -78,7 +79,7 @@ module Importance
         if importer.teardown_callback
           instance_exec(&importer.teardown_callback)
         else
-          redirect_to session[:redirect_url] || root_path, notice: "Import completed."
+          redirect_to (session[:redirect_url] || main_app.root_path), notice: "Import completed."
         end
 
       rescue => e
