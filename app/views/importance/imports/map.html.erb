@@ -1,6 +1,6 @@
 <%= form_with url: importance.import_path, method: :post do |form| %>
+  <%= form.submit t('importance.import'), class: @layout.submit_class %>
   <div class="importance-wrapper <%= @layout.wrapper_class %>">
-    <%= form.submit t('importance.import'), class: @layout.submit_class %>
     <table class="importance-table <%= @layout.table_class %>">
       <thead>
         <tr>
