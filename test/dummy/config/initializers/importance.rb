@@ -6,8 +6,8 @@ end
 Importance.configure do |config|
   config.set_layout :bootstrap
   config.register_importer :students do |importer|
-    importer.attribute :first_name, [ "Vo", "Vorname", "vname", "fname", "l_vorname" ]
-    importer.attribute :last_name, [ "Na", "Nachname", "nname", "lname", "l_nachname" ]
+    importer.attribute :first_name, [ "Vo", "Vorname", "vname", "fname", "l_vorname" ], required: true
+    importer.attribute :last_name, [ "Na", "Nachname", "nname", "lname", "l_nachname" ], required: true
     importer.attribute :email, [ "E-Mail", "email", "mail", "l_email" ]
     importer.batch_size 500
 
@@ -22,11 +22,11 @@ Importance.configure do |config|
     end
 
     importer.teardown do |importer|
-      redirect_to rails_routes.root_path, notice: "Import completed successfully."
+      redirect_to "/", notice: "Import completed successfully."
     end
 
     importer.error do |error|
-      redirect_to rails_routes.root_path, alert: error.full_message
+      redirect_to "/", alert: error.full_message
     end
   end
 end

@@ -3,4 +3,14 @@ it:
     use_column_as: Utilizzare come
     ignore: Ignora
     import: Importare
-    import_description: "Mostrati %{count} di %{full_count} record di esempio."
+    import_description: Mostrati %{count} di %{full_count} record di esempio.
+    errors:
+      no_importer: Nessun importatore selezionato.
+      no_file: Nessun file caricato.
+      invalid_file_type: Tipo di file non valido. I tipi consentiti sono %{types}.
+      no_mappings: Nessuna mappatura fornita.
+      duplicate_mapping: L'attributo %{attribute} è utilizzato più volte.
+      import_failed: Import fallito. %{error}.
+      missing_mapping: Mappatura mancante per l'attributo obbligatorio %{attribute}.
+    success:
+      import_completed: Import completato.

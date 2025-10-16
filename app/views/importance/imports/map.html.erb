@@ -4,32 +4,32 @@
     <table class="importance-table <%= @layout.table_class %>">
       <thead>
         <tr>
-          <% @file_headers.each_with_index do |file_header, file_header_idx| %>
+          <% @importer.file_headers.each_with_index do |file_header, file_header_idx| %>
             <th>
               <%= t('importance.use_column_as') %>
               <%
-                attribute_mappings = Importance::Header.match_attributes_to_headers(@importer_attributes, @file_headers)
-                default_value = Importance::Header.default_value_for_header(file_header, attribute_mappings)
+                attribute_mappings = Importance::Header.match_attributes_to_headers(@importer.importer_attributes, @importer.file_headers)
+                default_value = (@mappings && @mappings[file_header_idx]) || Importance::Header.default_value_for_header(file_header, attribute_mappings)
               %>
               <%= form.select "mappings[#{file_header_idx}]",
                               options_for_select(
                                 [[t('importance.ignore'), ""]] + 
-                                @importer_attributes.map { |attr| [attr.labels.first, attr.key] },
+                                @importer.importer_attributes.map { |attr| [attr.labels.first, attr.key] },
                                 default_value
                               ), {}, class: @layout.select_class %>
             </th>
           <% end %>
         </tr>
         <tr>
-          <% @file_headers.each do |file_header| %>
+          <% @importer.file_headers.each do |file_header| %>
             <th><%= file_header %></th>
           <% end %>
         </tr>
       </thead>
       <tbody>
-        <% @samples.each do |sample| %>
+        <% @importer.samples.each do |sample| %>
           <tr>
-            <% @file_headers.each_with_index do |file_header, file_header_idx| %>
+            <% @importer.file_headers.each_with_index do |file_header, file_header_idx| %>
               <td><%= sample[file_header_idx] %></td>
             <% end %>
           </tr>
@@ -38,7 +38,7 @@
     </table>
   </div>
   <p>
-    <%= t('importance.import_description', count: @samples.count, full_count: @full_count) %>
+    <%= t('importance.import_description', count: @importer.samples.count, full_count: @importer.full_count) %>
   </p>
 <% end %>
 

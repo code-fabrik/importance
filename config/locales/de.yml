@@ -3,4 +3,14 @@ de:
     use_column_as: Spalte verwenden als
     ignore: Ignorieren
     import: Importieren
-    import_description: "Es werden %{count} von %{full_count} Beispieldatensätzen angezeigt."
+    import_description: Es werden %{count} von %{full_count} Beispieldatensätzen angezeigt.
+    errors:
+      no_importer: Kein Importer ausgewählt.
+      no_file: Keine Datei hochgeladen.
+      invalid_file_type: Ungültiger Dateityp. Erlaubt sind %{types}.
+      no_mappings: Keine Zuordnungen angegeben.
+      duplicate_mapping: Attribut %{attribute} wird mehrfach verwendet.
+      import_failed: Import fehlgeschlagen. %{error}.
+      missing_mapping: Fehlende Zuordnung für erforderliches Attribut %{attribute}.
+    success:
+      import_completed: Import abgeschlossen.

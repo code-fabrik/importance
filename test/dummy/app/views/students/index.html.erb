@@ -1,4 +1,5 @@
 <%= form_with url: importance.submit_path(importer: :students), multipart: true do |form| %>
+  <%= form.hidden_field :redirect_url, value: request.original_url %>
   <%= form.file_field :file %>
   <%= form.submit "Submit" %>
 <% end %>

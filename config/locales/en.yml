@@ -3,4 +3,14 @@ en:
     use_column_as: Use column as
     ignore: Ignore
     import: Import
-    import_description: "Showing %{count} of %{full_count} sample records."
+    import_description: Showing %{count} of %{full_count} sample records.
+    errors:
+      no_importer: No importer selected.
+      no_file: No file uploaded.
+      invalid_file_type: Invalid file type. Allowed types are %{types}.
+      no_mappings: No mappings provided.
+      duplicate_mapping: Attribute %{attribute} is used multiple times.
+      import_failed: Import failed. %{error}.
+      missing_mapping: Missing mapping for required attribute %{attribute}.
+    success:
+      import_completed: Import completed.

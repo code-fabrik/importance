@@ -3,4 +3,14 @@ fr:
     use_column_as: Utiliser la colonne comme
     ignore: Ignorer
     import: Importer
-    import_description: "Affichage de %{count} sur %{full_count} exemples d'enregistrements."
+    import_description: Affichage de %{count} sur %{full_count} exemples d'enregistrements.
+    errors:
+      no_importer: Aucun importateur sélectionné.
+      no_file: Aucune fichier téléchargé.
+      invalid_file_type: Type de fichier invalide. Les types autorisés sont %{types}.
+      no_mappings: Aucune correspondance fournie.
+      duplicate_mapping: L'attribut %{attribute} est utilisé plusieurs fois.
+      import_failed: Import échoué. %{error}.
+      missing_mapping: Correspondance manquante pour l'attribut requis %{attribute}.
+    success:
+      import_completed: Import terminé.

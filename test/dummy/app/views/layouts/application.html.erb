@@ -34,10 +34,14 @@
       </nav>
 
       <% if notice %>
-        <%= notice %>
+        <div class="alert alert-success" role="alert">
+          <%= notice %>
+        </div>
       <% end %>
       <% if alert %>
-        <%= alert %>
+        <div class="alert alert-warning" role="alert">
+          <%= alert %>
+        </div>
       <% end %>
 
       <%= yield %>
