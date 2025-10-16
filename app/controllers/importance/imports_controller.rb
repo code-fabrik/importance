@@ -62,12 +62,12 @@ module Importance
 
       if @importer.nil?
         flash[:alert] = t("importance.errors.no_importer")
-        render :map and return
+        render :map, status: :unprocessable_entity and return
       end
 
       if params[:mappings].nil?
         flash[:alert] = t("importance.errors.no_mappings")
-        render :map and return
+        render :map, status: :unprocessable_entity and return
       end
 
       @mappings = params[:mappings].permit!.to_h.map { |k, v| [ k.to_i, v ] }.to_h
@@ -77,7 +77,7 @@ module Importance
         next if @mappings.values.include?(attribute.key.to_s)
 
         flash[:alert] = t("importance.errors.missing_mapping", attribute: attribute.labels.first)
-        render :map and return
+        render :map, status: :unprocessable_entity and return
       end
 
       @mappings.each do |column_index, attribute_name|
@@ -85,7 +85,7 @@ module Importance
         next if @mappings.values.count(attribute_name) <= 1
 
         flash[:alert] = t("importance.errors.duplicate_mapping", attribute: attribute_name)
-        render :map and return
+        render :map, status: :unprocessable_entity and return
       end
 
       if @importer.setup_callback
