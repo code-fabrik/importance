@@ -58,13 +58,12 @@ module Importance
     def import
       @layout = "Importance::#{Importance.configuration.layout.to_s.camelize}Layout".constantize
       @importer = Importance.configuration.importers[session[:importer].to_sym]
+      @importer.add_spreadsheet(session[:path])
 
       if @importer.nil?
         flash[:alert] = t("importance.errors.no_importer")
         render :map and return
       end
-
-      @importer.add_spreadsheet(session[:path])
 
       if params[:mappings].nil?
         flash[:alert] = t("importance.errors.no_mappings")
