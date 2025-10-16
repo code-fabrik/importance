@@ -74,6 +74,10 @@ module Importance
       @worksheet.count - 1
     end
 
+    def importer_attributes
+      @attributes
+    end
+
     # Yields each processed row (a hash of attribute => value) to the given block.
     # Skips empty rows (all values nil or empty).
     def each_processed_row(path, mappings)
