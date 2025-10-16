@@ -84,7 +84,7 @@ module Importance
         next if attribute_name == ""
         next if @mappings.values.count(attribute_name) <= 1
 
-        flash[:alert] = t("importance.errors.duplicate_mapping", attribute: attribute_name)
+        flash[:alert] = t("importance.errors.duplicate_mapping", attribute: attribute.labels.first)
         render :map, status: :unprocessable_entity and return
       end
 
