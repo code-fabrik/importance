@@ -113,6 +113,10 @@ module Importance
       else
         redirect_to (session[:redirect_url] || main_app.root_path), notice: t("importance.success.import_completed")
       end
+    rescue => e
+      if @importer.error_callback
+        instance_exec(e, &@importer.error_callback)
+      end
     end
   end
 end
