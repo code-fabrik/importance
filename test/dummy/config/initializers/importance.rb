@@ -6,9 +6,9 @@ end
 Importance.configure do |config|
   config.set_layout :bootstrap
   config.register_importer :students do |importer|
-    importer.attribute :first_name, [ "Vo", "Vorname", "vname", "fname", "l_vorname" ], required: true
-    importer.attribute :last_name, [ "Na", "Nachname", "nname", "lname", "l_nachname" ], required: true
-    importer.attribute :email, [ "E-Mail", "email", "mail", "l_email" ]
+    importer.attribute :first_name, [ "Vo", "Vorname", "vname", "fname", "l_vorname" ]
+    importer.attribute :last_name, [ "Na", "Nachname", "nname", "lname", "l_nachname" ]
+    importer.attribute :email, [ "E-Mail", "email", "mail", "l_email" ], optional: true
     importer.batch_size 500
 
     importer.setup do |importer|

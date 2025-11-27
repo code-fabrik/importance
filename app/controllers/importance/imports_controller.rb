@@ -73,7 +73,7 @@ module Importance
       @mappings = params[:mappings].permit!.to_h.map { |k, v| [ k.to_i, v ] }.to_h
 
       @importer.importer_attributes.each do |attribute|
-        next if !attribute.options[:required]
+        next if attribute.options[:optional]
         next if @mappings.values.include?(attribute.key.to_s)
 
         flash[:alert] = t("importance.errors.missing_mapping", attribute: attribute.labels.first)
