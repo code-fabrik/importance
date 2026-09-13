@@ -105,5 +105,18 @@ module Importance
 
       assert_equal "Customer Name", mappings[:name]
     end
+
+    test "multiple attributes are not auto-matched" do
+      attributes = [
+        OpenStruct.new(key: :name, labels: [ "Name" ], options: {}),
+        OpenStruct.new(key: :location, labels: [ "Standort" ], options: { multiple: true })
+      ]
+      file_headers = [ "Name", "Standort" ]
+
+      mappings = Header.match_attributes_to_headers(attributes, file_headers)
+
+      assert_equal "Name", mappings[:name]
+      assert_nil mappings[:location] # the user maps the columns by hand
+    end
   end
 end

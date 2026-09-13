@@ -120,6 +120,43 @@ Importance.configure do |config|
 end
 ```
 
+### Repeatable columns (`multiple: true`)
+
+Sometimes the number of columns is not known when the importer is written: a file may
+carry one quantity column per location, and the location names live in the header row.
+Declare such an attribute with `multiple: true` and it can be mapped to any number of
+columns at once.
+
+```ruby
+importer.attribute :location, [ "Standort", "Location" ], multiple: true
+```
+
+Instead of a single value, the record then carries a hash of file header => value, in the
+column order of the file:
+
+```ruby
+importer.perform do |records|
+  records.each do |record|
+    record[:name]     # => "MTP-4711"
+    record[:location] # => { "WEIS" => 10, "LUBO1" => 10, "LUBO2" => 80, "LOCH" => 0 }
+  end
+end
+```
+
+Details worth knowing:
+
+- Attributes without `multiple: true` behave exactly as before, and mapping two columns
+  to one of them is still rejected with the `duplicate_mapping` error.
+- A `multiple` attribute that is not `optional` requires **at least one** mapped column.
+- Every mapped column appears in the hash, including ones whose cell is empty, so the
+  keys are stable across rows. A row is still skipped when *all* of its values are blank.
+- A mapped column with a blank header gets the positional key `column_N` (1-based) rather
+  than a blank one.
+- If two columns share the same header, the last one wins. Validate in your `perform`
+  block if that matters for your file format.
+- The mapping page does not pre-select columns for `multiple` attributes — the labels are
+  only used to name the option in the dropdown, which the user picks per column.
+
 Add a file upload form to your application. You can use libraries like
 Dropzone.js to create drag and drop interfaces, and you can style them just
 as you wish. Make sure the path stays, and it is a multipart form.
@@ -202,6 +239,7 @@ en:
     use_column_as: Use column as
     ignore: Ignore
     import: Import
+    multiple_label: "%{attribute} (multiple columns)"
 ```
 
 ## Contributing

@@ -3,6 +3,7 @@ de:
     use_column_as: Spalte verwenden als
     ignore: Ignorieren
     import: Importieren
+    multiple_label: "%{attribute} (mehrere Spalten)"
     import_description: Es werden %{count} von %{full_count} Beispieldatensätzen angezeigt.
     errors:
       no_importer: Kein Importer ausgewählt.

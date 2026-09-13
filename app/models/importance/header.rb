@@ -4,6 +4,11 @@ module Importance
       attribute_mappings = {}
 
       importer_attributes.each do |attribute|
+        # A multiple attribute spans an unknown number of columns, and this matcher can
+        # claim at most one header per attribute. Pre-selecting a single arbitrary column
+        # would be misleading, so leave them for the user to map by hand.
+        next if attribute.options&.dig(:multiple)
+
         best_header = nil
         best_similarity = 0
 

@@ -14,7 +14,10 @@
               <%= form.select "mappings[#{file_header_idx}]",
                               options_for_select(
                                 [[t('importance.ignore'), ""]] + 
-                                @importer.importer_attributes.map { |attr| [attr.labels.first, attr.key] },
+                                @importer.importer_attributes.map { |attr|
+                                  label = attr.options[:multiple] ? t('importance.multiple_label', attribute: attr.labels.first) : attr.labels.first
+                                  [label, attr.key]
+                                },
                                 default_value
                               ), {}, class: @layout.select_class %>
             </th>

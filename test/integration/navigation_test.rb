@@ -3,15 +3,18 @@ require "test_helper"
 class NavigationTest < ActionDispatch::IntegrationTest
   include Importance::Engine.routes.url_helpers
 
+  attr_reader :imported_records
+
   setup do
+    @imported_records = []
+    imported = @imported_records
+
     Importance.configure do |config|
       config.set_layout(:blank) # Reset to default layout
       config.register_importer(:integration_test_importer) do
         attribute :name, [ "Name" ]
         attribute :email, [ "Email" ]
-        perform do |records|
-          # Simple test importer that just stores records
-        end
+        perform { |records| imported.concat(records) }
       end
     end
   end
@@ -29,12 +32,14 @@ class NavigationTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "table.importance-table"
 
-    # Step 3: Submit mapping and import
-    mappings = { "name" => "name", "email" => "email" }
+    # Step 3: Submit mapping and import. Mappings are keyed by column index.
+    mappings = { "0" => "name", "1" => "email" }
     post import_path, params: { mappings: mappings }
 
     # Should complete successfully
-    assert_includes [ 200, 204, 302 ], response.status
+    assert_response :redirect
+    assert_equal 2, imported_records.size
+    assert_equal({ name: "John Doe", email: "john@example.com" }, imported_records.first)
   end
 
   test "handles missing session data gracefully" do

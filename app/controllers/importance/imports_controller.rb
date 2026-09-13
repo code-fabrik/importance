@@ -11,7 +11,7 @@ module Importance
 
       if upload.nil?
         flash[:alert] = t("importance.errors.no_file")
-        redirect_to session[:redirect_url] and return
+        redirect_to redirect_target and return
       end
 
       upload_extension = File.extname(upload.original_filename).downcase
@@ -19,7 +19,7 @@ module Importance
 
       if !supported_extensions.include?(upload_extension)
         flash[:alert] = t("importance.errors.invalid_file_type", types: supported_extensions.join(", "))
-        redirect_to session[:redirect_url] and return
+        redirect_to redirect_target and return
       end
 
       system_tmp_dir = Dir.tmpdir
@@ -31,7 +31,7 @@ module Importance
 
       if !File.exist?(upload_path)
         flash[:alert] = t("importance.errors.no_file")
-        redirect_to session[:redirect_url] and return
+        redirect_to redirect_target and return
       end
 
       FileUtils.mv(upload_path, persist_path)
@@ -46,7 +46,7 @@ module Importance
 
       if @importer.nil?
         flash[:alert] = t("importance.errors.no_importer")
-        redirect_to session[:redirect_url] and return
+        redirect_to redirect_target and return
       end
 
       @importer.add_spreadsheet(session[:path])
@@ -82,9 +82,12 @@ module Importance
 
       @mappings.each do |column_index, attribute_name|
         next if attribute_name == ""
+
+        attribute = @importer.importer_attributes.find { |attr| attr.key.to_s == attribute_name }
+        next if attribute&.options&.dig(:multiple) # multiple attributes absorb any number of columns
         next if @mappings.values.count(attribute_name) <= 1
 
-        attribute_label = @importer.importer_attributes.find { |attr| attr.key.to_s == attribute_name }.labels.first
+        attribute_label = attribute&.labels&.first || attribute_name
         flash[:alert] = t("importance.errors.duplicate_mapping", attribute: attribute_label)
         render :map, status: :unprocessable_entity and return
       end
@@ -111,12 +114,21 @@ module Importance
       if @importer.teardown_callback
         instance_exec(&@importer.teardown_callback)
       else
-        redirect_to (session[:redirect_url] || main_app.root_path), notice: t("importance.success.import_completed")
+        redirect_to redirect_target, notice: t("importance.success.import_completed")
       end
     rescue => e
       if @importer.error_callback
         instance_exec(e, &@importer.error_callback)
       end
+    end
+
+    private
+
+    # Where to send the user when the import finishes or is rejected. The host app may
+    # pass a redirect_url along with the upload; fall back to the application root if it
+    # did not, so an error path never redirects to nil.
+    def redirect_target
+      session[:redirect_url] || main_app.root_path
     end
   end
 end

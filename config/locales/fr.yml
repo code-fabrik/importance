@@ -3,6 +3,7 @@ fr:
     use_column_as: Utiliser la colonne comme
     ignore: Ignorer
     import: Importer
+    multiple_label: "%{attribute} (plusieurs colonnes)"
     import_description: Affichage de %{count} sur %{full_count} exemples d'enregistrements.
     errors:
       no_importer: Aucun importateur sélectionné.

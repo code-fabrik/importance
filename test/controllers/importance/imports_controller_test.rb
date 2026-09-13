@@ -5,16 +5,17 @@ module Importance
     include Engine.routes.url_helpers
 
     setup do
+      # Records the :test_importer received, for verification
+      @imported_records = []
+      imported = @imported_records
+
       # Configure a test importer using the sample XLSX file structure
       Importance.configure do |config|
         config.set_layout(:blank) # Reset to default layout
         config.register_importer(:test_importer) do
           attribute :name, [ "Name" ]
           attribute :email, [ "Email" ]
-          perform do |records|
-            # Store records for verification (in real use, this would save to database)
-            @controller.instance_variable_set(:@imported_records, records)
-          end
+          perform { |records| imported.concat(records) }
         end
       end
     end
@@ -31,10 +32,23 @@ module Importance
       assert File.exist?(@request.session[:path])
     end
 
-    test "submit should raise error when file is nil" do
-      assert_raises(ArgumentError, "Upload cannot be nil") do
-        post submit_path, params: { importer: "test_importer" }
-      end
+    test "submit should redirect with an alert when file is nil" do
+      post submit_path, params: { importer: "test_importer" }
+
+      assert_response :redirect
+      assert_equal I18n.t("importance.errors.no_file"), flash[:alert]
+    end
+
+    test "submit falls back to the root path when no redirect_url was given" do
+      post submit_path, params: { importer: "test_importer" }
+
+      assert_redirected_to main_app.root_path
+    end
+
+    test "submit redirects to the given redirect_url on error" do
+      post submit_path, params: { importer: "test_importer", redirect_url: "/students" }
+
+      assert_redirected_to "/students"
     end
 
     test "map should create headers for each attribute with file columns as candidates" do
@@ -57,10 +71,10 @@ module Importance
       file = fixture_file_upload("test_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       post submit_path, params: { file: file, importer: "test_importer" }
 
-      # Define column mappings from XLSX headers to importer attributes
+      # Define column mappings from XLSX column index to importer attributes
       mappings = {
-        "name" => "name",    # Map "name" column to :name attribute
-        "email" => "email"   # Map "email" column to :email attribute
+        "0" => "name",   # Map column 0 ("name") to the :name attribute
+        "1" => "email"   # Map column 1 ("email") to the :email attribute
       }
 
       # Process the import
@@ -69,7 +83,9 @@ module Importance
       end
 
       # Import should complete successfully
-      assert_includes [ 204, 302 ], response.status
+      assert_response :redirect
+      assert_equal 2, @imported_records.size
+      assert_equal({ name: "John Doe", email: "john@example.com" }, @imported_records.first)
     end
 
     test "submit stores file extension correctly" do
@@ -96,13 +112,14 @@ module Importance
       file = fixture_file_upload("test_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       post submit_path, params: { file: file, importer: "test_importer" }
 
-      mappings = { "name" => "name", "email" => "email" }
+      mappings = { "0" => "name", "1" => "email" }
 
       assert_nothing_raised do
         post import_path, params: { mappings: mappings }
       end
 
-      assert_includes [ 200, 204, 302 ], response.status
+      assert_response :redirect
+      assert_equal I18n.t("importance.success.import_completed"), flash[:notice]
     end
 
     test "import should handle empty rows" do
@@ -119,7 +136,7 @@ module Importance
       file = fixture_file_upload("test_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       post submit_path, params: { file: file, importer: "empty_row_importer" }
 
-      mappings = { "name" => "name" }
+      mappings = { "0" => "name" }
       post import_path, params: { mappings: mappings }
 
       # Should only process non-empty rows
@@ -145,7 +162,7 @@ module Importance
       file = fixture_file_upload("test_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       post submit_path, params: { file: file, importer: "batch_importer" }
 
-      mappings = { "name" => "name" }
+      mappings = { "0" => "name" }
       post import_path, params: { mappings: mappings }
 
       # Should have made multiple batch calls
@@ -169,7 +186,7 @@ module Importance
       file = fixture_file_upload("test_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       post submit_path, params: { file: file, importer: "callback_importer" }
 
-      mappings = { "name" => "name" }
+      mappings = { "0" => "name" }
       post import_path, params: { mappings: mappings }
 
       assert setup_called
@@ -194,7 +211,7 @@ module Importance
       file = fixture_file_upload("test_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       post submit_path, params: { file: file, importer: "error_importer" }
 
-      mappings = { "name" => "name" }
+      mappings = { "0" => "name" }
 
       assert_nothing_raised do
         post import_path, params: { mappings: mappings }
@@ -202,6 +219,98 @@ module Importance
 
       assert error_handled
       assert_equal "Test error", error_message
+    end
+
+    # --- multiple attributes ---
+
+    test "import maps several columns onto one multiple attribute" do
+      processed_records = []
+
+      Importance.configure do |config|
+        config.register_importer(:location_importer) do
+          attribute :name, [ "Name" ]
+          attribute :location, [ "Standort" ], multiple: true
+          perform { |records| processed_records.concat(records) }
+        end
+      end
+
+      post submit_path, params: { file: locations_file, importer: "location_importer" }
+      post import_path, params: { mappings: { "0" => "name", "1" => "location", "2" => "location", "3" => "location", "4" => "location" } }
+
+      assert_equal 2, processed_records.size
+      assert_equal "MTP-4711", processed_records.first[:name]
+      assert_equal({ "WEIS" => "10", "LUBO1" => "10", "LUBO2" => "80", "LOCH" => "0" },
+                   processed_records.first[:location])
+    end
+
+    test "import still rejects two columns mapped to a non-multiple attribute" do
+      Importance.configure do |config|
+        config.register_importer(:single_name_importer) do
+          attribute :name, [ "Name" ]
+          perform { |records| }
+        end
+      end
+
+      post submit_path, params: { file: locations_file, importer: "single_name_importer" }
+      post import_path, params: { mappings: { "0" => "name", "1" => "name" } }
+
+      assert_response :unprocessable_entity
+      assert_equal I18n.t("importance.errors.duplicate_mapping", attribute: "Name"), flash[:alert]
+    end
+
+    test "import requires at least one column for a non-optional multiple attribute" do
+      Importance.configure do |config|
+        config.register_importer(:required_location_importer) do
+          attribute :name, [ "Name" ]
+          attribute :location, [ "Standort" ], multiple: true
+          perform { |records| }
+        end
+      end
+
+      post submit_path, params: { file: locations_file, importer: "required_location_importer" }
+      post import_path, params: { mappings: { "0" => "name", "1" => "", "2" => "", "3" => "", "4" => "" } }
+
+      assert_response :unprocessable_entity
+      assert_equal I18n.t("importance.errors.missing_mapping", attribute: "Standort"), flash[:alert]
+    end
+
+    test "import accepts a single column for a multiple attribute" do
+      processed_records = []
+
+      Importance.configure do |config|
+        config.register_importer(:one_location_importer) do
+          attribute :name, [ "Name" ]
+          attribute :location, [ "Standort" ], multiple: true
+          perform { |records| processed_records.concat(records) }
+        end
+      end
+
+      post submit_path, params: { file: locations_file, importer: "one_location_importer" }
+      post import_path, params: { mappings: { "0" => "name", "1" => "location", "2" => "", "3" => "", "4" => "" } }
+
+      assert_equal 2, processed_records.size
+      assert_equal({ "WEIS" => "10" }, processed_records.first[:location])
+    end
+
+    test "map page marks multiple attributes in the dropdown" do
+      Importance.configure do |config|
+        config.register_importer(:marked_importer) do
+          attribute :name, [ "Name" ]
+          attribute :location, [ "Standort" ], multiple: true
+          perform { |records| }
+        end
+      end
+
+      post submit_path, params: { file: locations_file, importer: "marked_importer" }
+      get map_path
+
+      assert_response :success
+      assert_select "thead tr:first-child th:first-child select option",
+                    text: I18n.t("importance.multiple_label", attribute: "Standort")
+    end
+
+    def locations_file
+      fixture_file_upload("test_import_locations.csv", "text/csv")
     end
 
     teardown do
