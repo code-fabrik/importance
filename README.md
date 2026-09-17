@@ -242,6 +242,21 @@ en:
     multiple_label: "%{attribute} (multiple columns)"
 ```
 
+## Releasing
+
+Releases are published to RubyGems by GitHub Actions using [trusted publishing](https://guides.rubygems.org/trusted-publishing/) — no API keys or OTP codes are involved. Pushing a `v*` tag triggers `.github/workflows/release.yml`, which builds the gem and pushes it.
+
+1. Bump `Importance::VERSION` in `lib/importance/version.rb`
+2. Commit and push to `master`
+3. Tag and push the tag:
+
+```sh
+git tag v0.3.1
+git push origin v0.3.1
+```
+
+Do not run `rake release` — it tries to push the gem from your machine, which requires an API key with the `push_rubygem` scope and an MFA code. Tagging is all that is needed.
+
 ## Contributing
 
 Contribution directions go here.
